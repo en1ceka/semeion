@@ -71,7 +71,7 @@ public class Controller {
     private TextField model_name_textfield;
 
     @FXML
-    private ComboBox<?> model_combobox;
+    private ComboBox<String> model_combobox;
 
     @FXML
     private Canvas canvas;
@@ -85,6 +85,29 @@ public class Controller {
     private ComboBox<String> test_data_combobox;
 
 
+    private void update_models(){
+        model_combobox.getItems().clear();
+        File folder = new File("./src/models/");
+        File[] listOfFiles = folder.listFiles();
+
+        for (int i = 0; i < listOfFiles.length; i++) {
+            if (listOfFiles[i].isFile()) {
+
+                model_combobox.getItems().add(listOfFiles[i].getName());
+//                System.out.println("File " + listOfFiles[i].getName());
+            }
+        }
+    }
+
+    @FXML
+    public void model_action() {
+        pr("model changed");
+        pr(model_combobox.getSelectionModel().getSelectedItem());
+        try{
+            mlp = (MultilayerPerceptron) weka.core.SerializationHelper.read("./src/models/"+model_combobox.getSelectionModel().getSelectedItem());
+        }catch (Exception a) {
+        }
+    }
 
     @FXML
     public void initialize() {
@@ -110,12 +133,8 @@ public class Controller {
         }catch (Exception e){
             e.printStackTrace();
         }
+        update_models();
 
-        try{
-            mlp = (MultilayerPerceptron) weka.core.SerializationHelper.read("./src/models/ggg.model");
-        }catch (Exception a) {
-
-        }
     }
     @FXML
     private void onMousePressedListener(MouseEvent e){
@@ -140,56 +159,75 @@ public class Controller {
     private void onMouseReleaseListener(MouseEvent e){
 //        pr(mlp.classifyInstance(data_struct.instance(0)));
 
-        File file = new File("./src/data/digit.png");
-        WritableImage wim = new WritableImage(160, 160);
-        canvas.snapshot(null, wim);
-        try{
-            ImageIO.write(SwingFXUtils.fromFXImage(wim, null),
-                    "png", file);
-        }catch (Exception a){}
+        if(model_combobox.getSelectionModel().getSelectedItem() == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Warning Dialog");
+            alert.setHeaderText("Model is not selected");
+            alert.setContentText("Select model, and try again!");
 
-        BufferedImage img = null;
-        try {
-            img = ImageIO.read(new File("./src/data/digit.png"));
-        } catch (IOException a) {
-        }
-        BufferedImage after = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
-        AffineTransform at = new AffineTransform();
-        at.scale(0.1, 0.1);
-        AffineTransformOp scaleOp =
-                new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
-        after = scaleOp.filter(img, after);
-        File outputfile = new File("./src/data/scaled_digit.png");
-        try{
-            ImageIO.write(after, "png", outputfile);
-        }catch (Exception a){
+            alert.showAndWait();
+        }else{
+            File file = new File("./src/data/digit.png");
+            WritableImage wim = new WritableImage(160, 160);
+            canvas.snapshot(null, wim);
+            try{
+                ImageIO.write(SwingFXUtils.fromFXImage(wim, null),
+                        "png", file);
+            }catch (Exception a){}
 
-        }
-
-
-
-
-
-        double[] instanceValue1 = new double[data_struct.numAttributes()];
-        int i = 0;
-        for(int y=0;y<16;y++){
-            for(int x=0;x<16;x++) {
-               if (new java.awt.Color(after.getRGB(x, y)).getRed() < 127) {
-                   instanceValue1[i] = 1;
-               }else instanceValue1[i] = 0;
-               i++;
+            BufferedImage img = null;
+            try {
+                img = ImageIO.read(new File("./src/data/digit.png"));
+            } catch (IOException a) {
             }
-        }
-        instanceValue1[256] = 9;
+            BufferedImage after = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+            AffineTransform at = new AffineTransform();
+            at.scale(0.1, 0.1);
+            AffineTransformOp scaleOp =
+                    new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
+            after = scaleOp.filter(img, after);
+            File outputfile = new File("./src/data/scaled_digit.png");
+            try{
+                ImageIO.write(after, "png", outputfile);
+            }catch (Exception a){
 
-        data_struct.add(new DenseInstance(1.0, instanceValue1));
-        try {
-            String val = String.valueOf(mlp.classifyInstance(data_struct.instance(0)));
-            evaluate_info.setText(val);
-            pr(val + " " + data_struct.numInstances());
-            data_struct.remove(0);
-        }catch (Exception a){
-            a.printStackTrace();
+            }
+
+
+
+
+
+            double[] instanceValue1 = new double[data_struct.numAttributes()];
+            int i = 0;
+            for(int y=0;y<16;y++){
+                for(int x=0;x<16;x++) {
+                    if (new java.awt.Color(after.getRGB(x, y)).getRed() < 127) {
+                        instanceValue1[i] = 1;
+                    }else instanceValue1[i] = 0;
+                    i++;
+                }
+            }
+            instanceValue1[256] = 9;
+
+            data_struct.add(new DenseInstance(1.0, instanceValue1));
+            try {
+                double val = mlp.classifyInstance(data_struct.instance(0));
+                String correct_val;
+                if (val == 1.0){
+                    correct_val = "9";
+                }else if(val == 0.0){
+                    correct_val = "0";
+                }else{
+                    correct_val = String.valueOf((int)(val-1));
+                }
+
+
+                evaluate_info.setText(correct_val);
+                pr(val + " " + data_struct.numInstances());
+                data_struct.remove(0);
+            }catch (Exception a){
+                a.printStackTrace();
+            }
         }
     }
 
@@ -339,7 +377,7 @@ public class Controller {
             eval_model(mlp,train, test);
 
             weka.core.SerializationHelper.write("./src/models/"+model_name_textfield.getText()+".model", mlp);
-
+            update_models();
 
 
         }

@@ -29,13 +29,19 @@
       <Pane layoutY="-5.0" prefHeight="409.0" prefWidth="300.0" style="-fx-background-color: #ffccff;">
          <children>
             <Label layoutX="32.0" layoutY="35.0" text="select model" />
-            <ComboBox fx:id="model_combobox" layoutX="115.0" layoutY="31.0" prefHeight="25.0" prefWidth="144.0" style="-fx-background-color: #ffaaff;" />
-            <Label fx:id="evaluate_info" layoutX="32.0" layoutY="273.0" prefHeight="104.0" prefWidth="236.0" style="-fx-background-color: #ffefff;" />
-            <Label layoutX="32.0" layoutY="256.0" text="evaluate information" />
+            <ComboBox fx:id="model_combobox" layoutX="115.0" layoutY="31.0" onAction="#model_action" prefHeight="25.0" prefWidth="144.0" style="-fx-background-color: #ffaaff;" />
+            <Label fx:id="evaluate_info" layoutX="121.0" layoutY="268.0" prefHeight="71.0" prefWidth="58.0" textAlignment="CENTER">
+               <font>
+                  <Font name="System Bold" size="100.0" />
+               </font></Label>
+            <Label layoutX="108.0" layoutY="254.0" text="Prediction:">
+               <font>
+                  <Font size="18.0" />
+               </font></Label>
             <Label layoutX="32.0" layoutY="66.0" text="draw a number:" />
             <Canvas fx:id="canvas" height="160.0" layoutX="32.0" layoutY="83.0" onMouseDragged="#onMouseDraggedListener" onMouseExited="#onMouseExitedListener" onMousePressed="#onMousePressedListener" onMouseReleased="#onMouseReleaseListener" width="160.0" />
             <Label layoutX="206.0" layoutY="123.0" text="brush size" />
-            <TextField fx:id="brush_size" layoutX="206.0" layoutY="140.0" prefHeight="25.0" prefWidth="53.0" style="-fx-background-color: #ffe0ff;" text="12" />
+            <TextField fx:id="brush_size" layoutX="206.0" layoutY="140.0" prefHeight="25.0" prefWidth="53.0" style="-fx-background-color: #ffe0ff;" text="22" />
             <Button id="dark-pink" fx:id="clear_btn" layoutX="206.0" layoutY="178.0" mnemonicParsing="false" onMouseClicked="#clear_btn_clicked" prefHeight="25.0" prefWidth="53.0" style="-fx-background-color: #ff99ff;" stylesheets="@../styles/buttons.css" text="CLEAR" textFill="#510051">
                <font>
                   <Font name="System Bold" size="12.0" />
